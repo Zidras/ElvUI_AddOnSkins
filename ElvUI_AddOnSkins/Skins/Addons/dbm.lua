@@ -17,6 +17,8 @@ local hooksecurefunc = hooksecurefunc
 S:AddCallbackForAddon("DBM-Core", "DBM-Core", function()
 	if not E.private.addOnSkins.DBM then return end
 
+	local backportVersion = DBM.ReleaseRevision > 7000
+
 	local function createIconOverlay(id, parent)
 		local frame = CreateFrame("Frame", "$parentIcon" .. id .. "Overlay", parent)
 		frame:SetTemplate()
@@ -94,6 +96,9 @@ S:AddCallbackForAddon("DBM-Core", "DBM-Core", function()
 		icon1.overlay:Size(barHeight)
 		icon2.overlay:Size(barHeight)
 
+		name:ClearAllPoints()
+		timer:ClearAllPoints()
+
 		if db.DBMSkinHalf then
 			if not self.owner.options.BarYOffset or self.owner.options.BarYOffset < 20 then
 				self.owner.options.BarYOffset = 20
@@ -104,7 +109,7 @@ S:AddCallbackForAddon("DBM-Core", "DBM-Core", function()
 			end
 
 			name:Point("BOTTOMLEFT", frame, "TOPLEFT", 0, 3)
-			timer:Point("BOTTOMRIGHT", frame, "TOPRIGHT", -1, 3)
+			timer:Point("BOTTOMRIGHT", frame, "TOPRIGHT", 1, 3)
 		else
 			name:Point("LEFT", 5, 0)
 			timer:Point("RIGHT", -5, 0)
@@ -254,7 +259,9 @@ S:AddCallbackForAddon("DBM-Core", "DBM-Core", function()
 				local mt = getmetatable(bar).__index
 
 				hooksecurefunc(mt, "ApplyStyle", applyStyle)
-				S:Hook(mt, "Update", preUpdate)
+				if not backportVersion then
+					S:Hook(mt, "Update", preUpdate)
+				end
 
 				mt.SetPosition = setPosition
 				mt.MoveToNextPosition = moveToNextPosition
